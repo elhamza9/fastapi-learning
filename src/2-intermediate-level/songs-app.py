@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import FastAPI
+from fastapi import FastAPI, Path, Query
 from pydantic import BaseModel, Field
 
 app = FastAPI()
@@ -48,6 +48,19 @@ async def add_song(song_request: SongRequest):
     song.id = get_next_song_id()
     SONGS.append(song)
 
+@app.get("/songs/{id}")
+async def get_song_by_id(id: int = Path(gt=0)):
+    for song in SONGS:
+        if song.id == id:
+            return song
+
+@app.get("/songs/")
+async def search_songs(rating: int = Query(gt=-1)):
+    ret = []
+    for song in SONGS:
+        if song.rating == rating:
+            ret.append(song)
+    return ret
 
 def get_next_song_id() -> int:
     return SONGS[-1].id + 1 if len(SONGS) > 0 else 1
